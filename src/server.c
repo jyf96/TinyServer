@@ -6,7 +6,7 @@
 #include<pthread.h>
 #include"server.h"
 #include"file.h"
-
+char Buff[1024*10] = {0};
 int server(int port)
 {
 	int iListenSocket,iAcceptSocket;
@@ -47,41 +47,38 @@ int server(int port)
 		printf("listening ....!\n");
 		iAcceptSocket = accept(iListenSocket,(__SOCKADDR_ARG)&stServerListenAddress,&uiAddrLength);
 		printf("a new client %s connect !\n",inet_ntoa(stServerListenAddress.sin_addr));
-		pthread_t pthread = 0;
 
-		iRet = pthread_create (&pthread,NULL,server_handle_request,(void *)&iAcceptSocket);
-		if(0 != iRet)
+		iRet = server_handle_request(iAcceptSocket);
+		if(ERR_OK != iRet)
 		{
-			printf("create pthread server_handle_request failed!\n");
-			close(iListenSocket);
-			return ERR_FAIL;
-		}
-		int *piRet = NULL;
-		pthread_join(pthread,(void *)&piRet);
-		if(NULL != piRet)
-		{
-			if(ERR_OK!= *piRet)
-			{
-				break;
-			}
+			break;
 		}
 	}
 	close(iListenSocket);
 	printf("close iListenSocket %d ok!\n",iListenSocket);
 	return ERR_OK;
 }
-void *server_handle_request(void *arg)
+int server_handle_request(int iAcceptSocket)
 {
-	int *piRet = malloc(sizeof(int));
-	*piRet = ERR_OK;
-	int iAcceptSocket = *(int *)arg;
-	char *fileName = GetDataFromSocket(iAcceptSocket);
-	if(STR_HEAD_EQUA(fileName,"exit"))
+	char szString[20] = {0};
+	memset(Buff,0,sizeof(Buff));
+	recv(iAcceptSocket,Buff,sizeof(Buff)-1,MSG_WAITFORONE);
+	printf("%s\n",Buff);
+	char *pcData = Buff;
+
+	//method
+	pcData = StringQueuePop(pcData,szString);
+	printf("%s\n",szString);
+
+	//filepath
+	pcData = StringQueuePop(pcData,szString);
+	printf("%s\n",szString);
+	if(STR_HEAD_EQUA(szString,"exit"))
 	{
-		*piRet = ERR_EXIT;
+		return ERR_EXIT;
 	}
-	char *Data = GetTextFile(fileName);
-	send(iAcceptSocket,Data,strlen(Data),0);
+	SendFile(szString,iAcceptSocket);
 	
-	return (void *)piRet;
+	close(iAcceptSocket);
+	return ERR_OK;
 }

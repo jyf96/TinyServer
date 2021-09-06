@@ -1,5 +1,5 @@
 #ifndef _SERVER_H
 #define _SERVER_H
 int server(int port);
-void *server_handle_request(void *arg);
+int server_handle_request(int iAcceptSocket);
 #endif

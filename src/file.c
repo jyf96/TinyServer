@@ -1,43 +1,43 @@
 #include"base.h"
 #include<sys/socket.h>
 #include"file.h"
-char Buff[4094];
-char *GetNextHead(char *p)
+
+char *StringQueuePop(char *pcHead,char szOutString[20])
 {
-	if(p == NULL)
+	if(pcHead == NULL)
 	{
 		return NULL;
 	}
-	while(*p!='\0'&&*p!=' ')
+	char *p = pcHead;
+	while(*p == ' ')
 	{
 		p++;
 	}
-	if(*p!=' ')
+	pcHead = p;
+
+	while(*p!='\0'&&*p!=' '&&*p!='\n')
 	{
-		return NULL;
+		p++;
 	}
+	memset(szOutString,0,sizeof(char)*20);
+	if((p-pcHead)>19)
+	{
+		memcpy(szOutString,pcHead,sizeof(char)*19);
+	}
+	else
+	{
+		memcpy(szOutString,pcHead,sizeof(char)*(p-pcHead));
+	}
+
 	while(*p!='\0'&&*p==' ')
 	{
 		p++;
 	}
-	if(*p=='\0')
-	{
-		return NULL;
-	}
 	return p;
 }
-char *GetDataFromSocket(int iAcceptSocket)
+void SendFile(char *fileName,int iAcceptSocket)
 {
-	memset(Buff,0,sizeof(Buff));
-	recv(iAcceptSocket,Buff,sizeof(Buff)-1,MSG_WAITFORONE);
-	printf("%s\n",Buff);
-	char *p = GetNextHead(Buff);
-	printf("%s \n",p);
-	return p;
-}
-char *GetTextFile(char *fileName)
-{
-	char szFullPathName[4094] = "resources";
+	char szFullPathName[128] = "resources";
 	FILE *f = NULL;
 	if(STR_HEAD_EQUA(fileName,"/"))
 	{
@@ -48,18 +48,19 @@ char *GetTextFile(char *fileName)
 		strcat(szFullPathName,fileName);
 	}
 	printf("%s\n",szFullPathName);
+	char Buff[4094] = {0};
 	f = fopen(szFullPathName,"r");
 	if(f!=NULL)
 	{
-		fread(szFullPathName,sizeof(char),sizeof(szFullPathName)-1,f);
-		printf("%s\n",szFullPathName);
+		fread(Buff,sizeof(char),sizeof(Buff)-1,f);
 		fclose(f);
 	}
 	else
 	{
-		printf("no exit file\n");
+		printf("file not exit!\n");
+		sprintf(Buff,"file not exit!\n");
 	}
-	memset(Buff,0,sizeof(Buff));
-	memcpy(Buff,szFullPathName,strlen(szFullPathName));
-	return Buff;
+	printf("%s\n",Buff);
+	send(iAcceptSocket,Buff,strlen(Buff),0);
+	return;
 }
