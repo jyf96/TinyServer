@@ -3,4 +3,5 @@
 #define STR_HEAD_EQUA(Buff,str) (0 == strncmp(Buff,str,sizeof(str)-1))
 char *StringQueuePop(char *pcHead,char szOutString[20]);
 void SendFile(char *fileName,int iAcceptSocket);
+void SendString(char *String,int iAcceptSocket);
 #endif

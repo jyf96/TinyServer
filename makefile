@@ -1,4 +1,4 @@
-target = bin/myftp
+target = bin/TinyServer
 
 objects = src/*.o
 

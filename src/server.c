@@ -73,10 +73,14 @@ int server_handle_request(int iAcceptSocket)
 	//filepath
 	pcData = StringQueuePop(pcData,szString);
 	printf("%s\n",szString);
-	if(STR_HEAD_EQUA(szString,"exit"))
+	if(STR_HEAD_EQUA(szString,"/exit"))
 	{
 		return ERR_EXIT;
 	}
+	/*send http response*/
+	SendString("HTTP/1.1 200 OK\r\nContent-type : text/htm\r\n\r\n",iAcceptSocket);
+	
+	/*send body*/
 	SendFile(szString,iAcceptSocket);
 	
 	close(iAcceptSocket);

@@ -39,7 +39,7 @@ void SendFile(char *fileName,int iAcceptSocket)
 {
 	char szFullPathName[128] = "resources";
 	FILE *f = NULL;
-	if(STR_HEAD_EQUA(fileName,"/"))
+	if(STR_HEAD_EQUA(fileName,"/\0"))
 	{
 		strcat(szFullPathName,"/index.html");
 	}
@@ -63,4 +63,8 @@ void SendFile(char *fileName,int iAcceptSocket)
 	printf("%s\n",Buff);
 	send(iAcceptSocket,Buff,strlen(Buff),0);
 	return;
+}
+void SendString(char *String,int iAcceptSocket)
+{
+	send(iAcceptSocket,String,strlen(String),0);
 }
